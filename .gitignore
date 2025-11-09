@@ -1,41 +1,96 @@
-# Prerequisites
-*.d
+# Build directories (Qt Creator, CMake, qmake)
+build*/
+Build*/
+*/build-*
+*/Build-*
+*.pro.user*
+*.qbs.user
+*.qmlc
+*.jsc
 
-# Compiled Object files
-*.slo
-*.lo
+# Qt Creator / CLion / IDE configs
+*.autosave
+*.creator.*
+*.config
+*.pro.user
+*.workspace
+*.user
+*.user.*
+*.DS_Store
+*.swp
+*.bak
+*.orig
+*.rej
+*.tmp
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+install_manifest.txt
+
+# Object / binary files
 *.o
 *.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
 *.a
 *.lib
-
-# Executables
+*.so
+*.dll
+*.dylib
 *.exe
-*.out
+*.apk
+*.aab
 *.app
+*.out
 
-# debug information files
-*.dwo
+# Android specific
+*.keystore
+*.jks
+*.gradle/
+.gradle/
+.gradle-cache/
+local.properties
+app/build/
+build/
+captures/
+.idea/
+*.iml
+
+# Qt resource compiler / moc / uic / rcc generated files
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+
+# Logs
+*.log
+*.stackdump
+
+# Temporary files
+*~
+*.tmp
+*.temp
+*.cache
+*.old
+
+# System-specific
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Packaging outputs
+*.tar
+*.zip
+*.7z
+*.gz
+
+# if using Android Studio integration
+.gradle/
+.idea/
+local.properties
+*.iml
+*.apk
+*.aab
+captures/
+output.json

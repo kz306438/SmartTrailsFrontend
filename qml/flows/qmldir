@@ -1,0 +1,4 @@
+module flows
+AuthFlow 1.0 AuthFlow.qml
+AppFlow 1.0 AppFlow.qml
+
