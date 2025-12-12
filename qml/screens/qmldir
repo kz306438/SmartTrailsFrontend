@@ -1,3 +1,6 @@
 module screens
-LoginPage 1.0 LoginPage.qml
-
+LoginScreen 1.0 LoginScreen.qml
+HomeScreen 1.0 HomeScreen.qml
+RegisterScreen 1.0 RegisterScreen.qml
+ProfileScreen 1.0 ProfileScreen.qml
+MapScreen 1.0 MapScreen.qml

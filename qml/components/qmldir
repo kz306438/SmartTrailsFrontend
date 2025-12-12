@@ -1,2 +1,6 @@
 module components
-AppRoundButton 1.0 AppRoundButton.qml
+AppButton 1.0 AppButton.qml
+AppTextInput 1.0 AppTextInput.qml
+AppNavBar 1.0 AppNavBar.qml
+DistanceSlider 1.0 DistanceSlider.qml
+PoiSelector 1.0 PoiSelector.qml
