@@ -13,26 +13,20 @@ Page {
         PoiManager.fetchPoiTypes()
     }
 
-    // --- 2. ЛОГИКА GPS ---
         PositionSource {
             id: gpsSource
-            // AllPositioningMethods позволяет использовать и GPS, и Сеть.
-            // Но если нет прав на COARSE (сеть), он будет долбиться только в спутники.
             preferredPositioningMethods: PositionSource.AllPositioningMethods
 
-            // Ставим интервал, чтобы не нагружать батарею слишком частыми опросами
             updateInterval: 1000
             active: false
 
             onPositionChanged: {
                 var coord = gpsSource.position.coordinate
-                // Проверка на isValid обязательна
                 if (coord.isValid) {
                     console.log("Got coordinates:", coord.latitude, coord.longitude)
 
                     startPointInput.text = coord.latitude.toFixed(5) + ", " + coord.longitude.toFixed(5)
 
-                    // Как только получили валидную точку — выключаем
                     active = false
                     gpsBusy.running = false
                 }
@@ -43,7 +37,6 @@ Page {
                 console.log("GPS Error Code:", sourceError)
                 gpsBusy.running = false
 
-                // Расшифровка популярных ошибок для пользователя
                 if (sourceError == PositionSource.AccessError) {
                     errorText.text = "GPS Access Denied. Allow permission in settings."
                 } else if (sourceError == PositionSource.ClosedError) {
@@ -53,18 +46,26 @@ Page {
                 }
             }
         }
-    Connections {
-        target: RouteManager
-        function onRouteGenerated(finalLength, timeMinutes) {
-            console.log("Route generated! Length:", finalLength, "km")
-            successText.text = ""
-            errorText.text = ""
-            window.pushScreen("qrc:/qt/qml/screens/MapScreen.qml", {
-                "routeDistance": finalLength,
-                "routeTime": timeMinutes
-            })
-        }
-    }
+        Connections {
+                target: RouteManager
+                enabled: root.visible
+
+                function onRouteGenerated(finalLength, timeMinutes) {
+                    console.log("Route generated! Length:", finalLength, "km")
+                    successText.text = ""
+                    errorText.text = ""
+
+                    window.pushScreen("qrc:/qt/qml/screens/MapScreen.qml", {
+                        "routeDistance": finalLength,
+                        "routeTime": timeMinutes,
+                        // Новые параметры для повторной генерации:
+                        "startLat": parseFloat(startPointInput.text.split(",")[0].trim()),
+                        "startLon": parseFloat(startPointInput.text.split(",")[1].trim()),
+                        "requestDistance": distanceSlider.value,
+                        "requestPoiTypes": poiSelector.selectedIds
+                    })
+                }
+            }
 
     ColumnLayout {
         anchors.fill: parent
@@ -81,20 +82,17 @@ Page {
             Layout.topMargin: 40
         }
 
-        // --- 3. ПОЛЕ ВВОДА С КНОПКОЙ GPS ---
         Item {
             Layout.fillWidth: true
-            Layout.preferredHeight: 50 // Высота как у AppTextInput
+            Layout.preferredHeight: 50
 
             AppTextInput {
                 id: startPointInput
                 anchors.fill: parent
-                // Оставляем место справа для иконки, чтобы текст не наезжал
                 rightPadding: 50
                 placeholderText: "Start Point (Lat, Lon)"
             }
 
-            // Кнопка GPS (внутри поля справа)
             Rectangle {
                 width: 40
                 height: 40
@@ -104,7 +102,6 @@ Page {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.rightMargin: 5
 
-                // Индикатор загрузки
                 BusyIndicator {
                     id: gpsBusy
                     anchors.fill: parent
@@ -112,7 +109,6 @@ Page {
                     visible: running
                 }
 
-                // Иконка
                 Image {
                     anchors.centerIn: parent
                     source: "qrc:/qt/qml/SmartTrailsFrontend/assets/map-pin.svg"
@@ -142,19 +138,16 @@ Page {
             }
         }
 
-        // Слайдер дистанции
         DistanceSlider {
             id: distanceSlider
             Layout.fillWidth: true
         }
 
-        // Выбор POI
         PoiSelector {
             id: poiSelector
             Layout.fillWidth: true
         }
 
-        // Текст успеха (можно убрать, если не используется)
         Text {
             id: successText
             visible: text !== ""
@@ -164,18 +157,31 @@ Page {
             Layout.alignment: Qt.AlignHCenter
         }
 
-        // Текст ошибки
-        Text {
-            id: errorText
-            visible: text !== ""
-            color: Style.error
-            font.pixelSize: Style.fontSizeSmall
-            Layout.alignment: Qt.AlignHCenter
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-        }
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: errorText.text !== "" ? errorText.implicitHeight + 24 : 0
+                    visible: errorText.text !== ""
 
+                    color: "#FFEBEE"
+                    radius: 8
+                    border.color: Style.error
+                    border.width: 1
+
+                    Behavior on Layout.preferredHeight { NumberAnimation { duration: 200 } }
+
+                    Text {
+                        id: errorText
+                        anchors.centerIn: parent
+                        width: parent.width - 32
+
+                        text: ""
+
+                        color: "#D32F2F"
+                        font.pixelSize: Style.fontSizeSmall
+                        wrapMode: Text.WordWrap
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
         Item { Layout.fillHeight: true }
 
         AppButton {
@@ -188,11 +194,7 @@ Page {
 
                 let cleanText = startPointInput.text.trim()
 
-                // Если поле пустое, можно подставить дефолт (для тестов) или выдать ошибку
                 if (cleanText === "") {
-                     // Пример для теста (Минск), если пользователь ничего не ввел
-                     // cleanText = "53.90, 27.56"
-                     // startPointInput.text = cleanText
                      errorText.text = "Please enter start point or use GPS"
                      return
                 }
@@ -230,9 +232,8 @@ Page {
         activeIndex: 0
 
         onTabSelected: (index) => {
-            if (index === 2) {
-                window.replaceScreen("qrc:/qt/qml/screens/ProfileScreen.qml")
-            }
+            if (index === 1) window.replaceScreen("qrc:/qt/qml/screens/SavedRoutesScreen.qml")
+            if (index === 2) window.replaceScreen("qrc:/qt/qml/screens/ProfileScreen.qml")
         }
     }
 }

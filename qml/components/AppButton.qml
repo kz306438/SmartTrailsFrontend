@@ -7,7 +7,6 @@ Button {
     id: control
     text: "Button"
 
-    // Свойства для кастомизации
     property color baseColor: Style.primary
     property color textColor: "#FFFFFF"
 

@@ -14,6 +14,8 @@ set(SOURCES
     src/controllers/AuthManager.cpp
     src/controllers/RouteManager.cpp
     src/controllers/PoiManager.cpp
+    src/controllers/AdminManager.cpp
+    src/controllers/MapManager.cpp
     src/utils/AppSettings.cpp
 )
 
@@ -22,6 +24,8 @@ set(HEADERS
     include/controllers/AuthManager.h
     include/controllers/RouteManager.h
     include/controllers/PoiManager.h
+    include/controllers/AdminManager.h
+    include/controllers/MapManager.h
     include/utils/AppSettings.h
 )
 
@@ -53,12 +57,15 @@ qt_add_qml_module(appSmartTrailsFrontend
         assets/sport.svg
         assets/star.svg
         assets/trash.svg
+        assets/back.svg
+        assets/bookmark.svg
+        assets/metrics.svg
+        assets/download.svg
 )
 
 target_include_directories(appSmartTrailsFrontend PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src )
 target_include_directories(appSmartTrailsFrontend PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# 2. ЛИНКУЕМ Qt6::QuickControls2
 target_link_libraries(appSmartTrailsFrontend
     PRIVATE
     Qt6::Core Qt6::Gui Qt6::Quick Qt6::Qml Qt6::Positioning Qt6::Location

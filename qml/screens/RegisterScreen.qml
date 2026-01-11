@@ -51,46 +51,90 @@ Page {
             echoMode: TextInput.Password
         }
 
-        // --- Вывод ошибок ---
-        Text {
-            id: errorText
-            visible: text !== ""
-            color: Style.error
-            font.pixelSize: Style.fontSizeSmall
-            Layout.alignment: Qt.AlignHCenter
-            Layout.maximumWidth: parent.width
-            wrapMode: Text.WordWrap
-            horizontalAlignment: Text.AlignHCenter
-        }
+        // --- Красивый вывод ошибок ---
+                Rectangle {
+                    Layout.fillWidth: true
+                    // Высота подстраивается под текст + отступы. Если текста нет -> высота 0
+                    Layout.preferredHeight: errorText.text !== "" ? errorText.implicitHeight + 24 : 0
+                    visible: errorText.text !== ""
 
-        // --- Кнопка регистрации ---
-        AppButton {
-            text: "REGISTER"
-            Layout.fillWidth: true
-            enabled: !AuthManager.isLoading
+                    color: "#FFEBEE" // Светло-красный фон
+                    radius: 8
+                    border.color: Style.error
+                    border.width: 1
 
-            onClicked: {
-                errorText.text = ""
+                    // Анимация появления
+                    Behavior on Layout.preferredHeight { NumberAnimation { duration: 200 } }
 
-                // Простая валидация на пустоту
-                if (usernameField.text === "" || emailField.text === "" || passwordField.text === "") {
-                    errorText.text = "Please fill in all fields"
-                    return
+                    Text {
+                        id: errorText
+                        anchors.centerIn: parent
+                        width: parent.width - 32 // Отступы по бокам
+
+                        text: "" // Текст устанавливается через JS при ошибке
+
+                        color: "#D32F2F" // Темно-красный цвет текста (читабельнее, чем ярко-красный)
+                        font.pixelSize: Style.fontSizeSmall
+                        wrapMode: Text.WordWrap
+                        horizontalAlignment: Text.AlignHCenter
+                    }
                 }
 
-                // Вызов C++ метода
-                AuthManager.registerUser(usernameField.text, emailField.text, passwordField.text)
-            }
+                AppButton {
+                            text: "REGISTER"
+                            Layout.fillWidth: true
+                            enabled: !AuthManager.isLoading
 
-            // Индикатор загрузки
-            BusyIndicator {
-                anchors.centerIn: parent
-                running: AuthManager.isLoading
-                visible: running
-                height: parent.height * 0.8
-            }
-        }
+                            onClicked: {
+                                errorText.text = ""
 
+                                // Получаем значения и убираем лишние пробелы по краям
+                                var user = usernameField.text.trim()
+                                var email = emailField.text.trim()
+                                var pass = passwordField.text // Пароль не тримим, пробелы могут быть частью пароля
+
+                                // 1. Простая валидация на пустоту
+                                if (user === "" || email === "" || pass === "") {
+                                    errorText.text = "Please fill in all fields"
+                                    return
+                                }
+
+                                // 2. Валидация Email через Regex
+                                // Разрешает буквы, цифры, точки, дефисы до @, затем домен и зону (минимум 2 буквы)
+                                var emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+                                if (!emailRegex.test(email)) {
+                                    errorText.text = "Invalid email address format"
+                                    return
+                                }
+
+                                // 3. Валидация пароля
+                                // А) Длина минимум 8 символов
+                                if (pass.length < 8) {
+                                    errorText.text = "Password must be at least 8 characters long"
+                                    return
+                                }
+
+                                // Б) Наличие букв и цифр
+                                var hasLetter = /[a-zA-Z]/.test(pass)
+                                var hasDigit = /[0-9]/.test(pass)
+
+                                if (!hasLetter || !hasDigit) {
+                                    errorText.text = "Password must contain both letters and numbers"
+                                    return
+                                }
+
+                                // Если все проверки пройдены — вызываем C++ метод
+                                AuthManager.registerUser(user, email, pass)
+                            }
+
+                            // Индикатор загрузки
+                            BusyIndicator {
+                                anchors.centerIn: parent
+                                running: AuthManager.isLoading
+                                visible: running
+                                height: parent.height * 0.8
+                            }
+                        }
         // Ссылка на логин
         RowLayout {
             Layout.alignment: Qt.AlignHCenter

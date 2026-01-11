@@ -31,7 +31,7 @@ Window {
             if (AuthManager.checkAutoLogin()) {
                 // Если токен есть, смотрим на сохраненную роль
                 if (AuthManager.userRole === "admin") {
-                     stackView.replace("qrc:/qt/qml/screens/HomeScreen.qml")
+                     stackView.replace("qrc:/qt/qml/screens/AdminHomeScreen.qml")
                 } else {
                      stackView.replace("qrc:/qt/qml/screens/HomeScreen.qml")
                 }

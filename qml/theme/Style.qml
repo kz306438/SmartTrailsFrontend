@@ -3,7 +3,7 @@ import QtQuick
 
 QtObject {
     // Цвета из твоего дизайна
-    property color primary: "#4CAF50"       // Основной зеленый
+    property color primary: "#4CAF50"        // Основной зеленый
     property color primaryDark: "#388E3C"   // Темно-зеленый (для нажатий)
     property color background: "#F5F5F5"    // Светло-серый фон
     property color cardBackground: "#FFFFFF"// Белый для карточек

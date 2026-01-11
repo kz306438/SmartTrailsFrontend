@@ -9,6 +9,11 @@ qt_add_qml_module(screens
         HomeScreen.qml
         ProfileScreen.qml
         MapScreen.qml
+        SavedRoutesScreen.qml
+        SavedRouteDetailScreen.qml
+        AdminHomeScreen.qml
+        AdminMetricsScreen.qml
+        AdminMapScreen.qml
     RESOURCES
         qmldir
 )

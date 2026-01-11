@@ -18,9 +18,14 @@ void AuthManager::setLoading(bool val) {
 bool AuthManager::checkAutoLogin() {
     bool hasToken = AppSettings::instance().hasToken();
     if (hasToken) {
-        // Восстанавливаем роль в память из настроек, чтобы QML ее видел
         m_userRole = AppSettings::instance().getUserRole();
-        // Можно не эмитить сигнал, так как это инициализация, но для надежности:
+
+        // --- ДОБАВЛЕНО: Восстанавливаем имя и email из памяти ---
+        m_username = AppSettings::instance().getUsername();
+        m_email = AppSettings::instance().getEmail();
+
+        // Уведомляем QML, что данные изменились (чтобы поля не были пустыми)
+        emit userDataChanged();
         emit userRoleChanged();
     }
     return hasToken;
@@ -83,6 +88,8 @@ void AuthManager::fetchUserInfo(const QString& currentToken) {
                 m_username = obj.value("username").toString();
                 m_email = obj.value("email").toString();
 
+                AppSettings::instance().saveUserProfile(m_username, m_email);
+
                 if (m_userRole != role) {
                     m_userRole = role;
                     emit userRoleChanged();
@@ -116,22 +123,34 @@ void AuthManager::registerUser(const QString& username, const QString& email, co
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         setLoading(false);
         if (reply->error() == QNetworkReply::NoError) {
-            // Опционально: можно здесь тоже делать авто-логин, так как
-            // AuthController::registerUser возвращает токен.
-            // Но пока оставим просто уведомление об успехе.
             emit registerSuccess();
         } else {
-            QString errorMsg = "Ошибка регистрации";
-            auto doc = QJsonDocument::fromJson(reply->readAll());
+            // Улучшенная обработка ошибок
+            QString errorMsg = "Registration failed";
+
+            QByteArray responseData = reply->readAll();
+            auto doc = QJsonDocument::fromJson(responseData);
+
             if (doc.isObject() && doc.object().contains("error")) {
-                errorMsg = doc.object()["error"].toString();
+                QString serverError = doc.object()["error"].toString();
+
+                // Проверяем ключевые слова для замены на понятный текст
+                if (serverError.contains("exists", Qt::CaseInsensitive) ||
+                    serverError.contains("taken", Qt::CaseInsensitive)) {
+                    errorMsg = "This email is already registered.";
+                } else {
+                    errorMsg = serverError; // Иначе показываем, что прислал сервер
+                }
+            } else {
+                // Если сервер не прислал JSON, показываем статус сети
+                errorMsg = "Server error: " + reply->errorString();
             }
+
             emit registerFailed(errorMsg);
         }
         reply->deleteLater();
     });
 }
-
 void AuthManager::updateProfile(const QString& newUsername) {
     if (newUsername.isEmpty() || newUsername == m_username) {
         return; // Не отправляем, если имя пустое или не изменилось
@@ -151,6 +170,9 @@ void AuthManager::updateProfile(const QString& newUsername) {
         if (reply->error() == QNetworkReply::NoError) {
             // Успех: обновляем локальные данные
             m_username = newUsername;
+
+            AppSettings::instance().saveUserProfile(m_username, m_email);
+
             emit userDataChanged();
             qDebug() << "Profile updated successfully";
         } else {

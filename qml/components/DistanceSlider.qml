@@ -59,7 +59,7 @@ ColumnLayout {
             radius: 12
             color: "#FFFFFF"
             border.color: "#E0E0E0"
-            // Простая тень через вложенный прямоугольник
+
             Rectangle {
                 z: -1
                 anchors.fill: parent

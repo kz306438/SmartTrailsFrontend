@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls // Используем TabButton
+import QtQuick.Controls
 import theme 1.0
 
 Rectangle {
@@ -34,29 +34,24 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                // --- Настройка контента ---
                 text: modelData.text
-                // Иконка и её цвет
+
                 icon.source: modelData.icon
                 icon.width: 28
                 icon.height: 28
-                // Если кнопка выбрана (checked) - зеленая, нет - серая
+
                 icon.color: checked ? Style.primary : Style.textSecondary
 
-                // Текст под иконкой
                 display: AbstractButton.TextUnderIcon
                 font.pixelSize: 12
                 font.bold: checked
 
-                // Цвет текста (через palette)
                 palette.buttonText: checked ? Style.primary : Style.textSecondary
 
-                // Логика выбора
                 checkable: true
                 checked: root.activeIndex === index
                 onClicked: root.tabSelected(index)
 
-                // Убираем стандартный серый фон кнопки, оставляем прозрачный
                 background: Item {}
             }
         }

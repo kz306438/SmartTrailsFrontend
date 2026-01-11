@@ -13,6 +13,9 @@ public:
     int getUserId() const;
     QString getUserRole() const;
     QString getToken() const;
+    void saveUserProfile(const QString& username, const QString& email);
+    QString getUsername() const;
+    QString getEmail() const;
     bool hasToken() const;
 
 private:

@@ -16,7 +16,7 @@ public:
     Q_INVOKABLE void login(const QString& email, const QString& password);
     Q_INVOKABLE void registerUser(const QString& username, const QString& email, const QString& password);
     Q_INVOKABLE void logout();
-    Q_INVOKABLE bool checkAutoLogin(); // Проверка, сохранен ли токен при запуске
+    Q_INVOKABLE bool checkAutoLogin();
     Q_INVOKABLE void updateProfile(const QString& newUsername);
 
     bool isLoading() const { return m_isLoading; }

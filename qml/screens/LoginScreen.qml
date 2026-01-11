@@ -13,17 +13,6 @@ Page {
         width: parent.width * 0.85
         spacing: 20
 
-        // // Логотип или заголовок
-        // Image {
-        //     source: "../../assets/logo.png" // Если есть, иначе заглушка
-        //     Layout.alignment: Qt.AlignHCenter
-        //     Layout.preferredHeight: 100
-        //     Layout.preferredWidth: 100
-        //     fillMode: Image.PreserveAspectFit
-        //     // Временная заглушка, если нет картинки
-        //     visible: status === Image.Ready
-        // }
-
         Text {
             text: "Route Finder"
             font.pixelSize: 28
@@ -40,7 +29,6 @@ Page {
             Layout.bottomMargin: 20
         }
 
-        // Поля ввода
         AppTextInput {
             id: emailField
             Layout.fillWidth: true
@@ -54,30 +42,42 @@ Page {
             echoMode: TextInput.Password
         }
 
-        // Сообщение об ошибке (управляется из C++)
-        Text {
-            id: errorText
-            visible: text !== ""
-            color: Style.error
-            font.pixelSize: Style.fontSizeSmall
-            Layout.alignment: Qt.AlignHCenter
-            Layout.maximumWidth: parent.width
-            wrapMode: Text.WordWrap
-        }
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: errorText.text !== "" ? errorText.implicitHeight + 24 : 0
+                    visible: errorText.text !== ""
 
-        // Кнопка входа
+                    color: "#FFEBEE"
+                    radius: 8
+                    border.color: Style.error
+                    border.width: 1
+
+                    Behavior on Layout.preferredHeight { NumberAnimation { duration: 200 } }
+
+                    Text {
+                        id: errorText
+                        anchors.centerIn: parent
+                        width: parent.width - 32
+
+                        text: ""
+
+                        color: "#D32F2F"
+                        font.pixelSize: Style.fontSizeSmall
+                        wrapMode: Text.WordWrap
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+
         AppButton {
             text: "LOGIN"
             Layout.fillWidth: true
-            enabled: !AuthManager.isLoading // Блокируем, пока грузится
+            enabled: !AuthManager.isLoading
 
             onClicked: {
                 errorText.text = ""
-                // Вызов C++ метода
                 AuthManager.login(emailField.text, passwordField.text)
             }
 
-            // Индикатор загрузки внутри кнопки (опционально)
             BusyIndicator {
                 anchors.centerIn: parent
                 running: AuthManager.isLoading
@@ -96,19 +96,15 @@ Page {
     }
 
 
-    // Подключаемся к сигналам от AuthManager (C++)
     Connections {
             target: AuthManager
 
             function onLoginSuccess() {
                 console.log("Login successful! Role:", AuthManager.userRole)
 
-                // ЛОГИКА МАРШРУТИЗАЦИИ
                 if (AuthManager.userRole === "admin") {
-                    // Если админ - идем в админку (создашь этот файл позже)
-                    window.replaceScreen(Qt.resolvedUrl("HomeScreen.qml"))
+                    window.replaceScreen(Qt.resolvedUrl("AdminHomeScreen.qml"))
                 } else {
-                    // Если обычный юзер - идем на главный экран
                     window.replaceScreen(Qt.resolvedUrl("HomeScreen.qml"))
                 }
             }

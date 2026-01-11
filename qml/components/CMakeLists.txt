@@ -7,8 +7,12 @@ qt_add_qml_module(components
     AppButton.qml
     AppTextInput.qml
     AppNavBar.qml
+    AppMap.qml
     DistanceSlider.qml
     PoiSelector.qml
+    RouteCard.qml
+    MetricCard.qml
+    MapSourceCard.qml
     RESOURCES
         qmldir
 )

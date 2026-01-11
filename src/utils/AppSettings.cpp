@@ -35,3 +35,16 @@ QString AppSettings::getToken() const {
 bool AppSettings::hasToken() const {
     return !getToken().isEmpty();
 }
+
+void AppSettings::saveUserProfile(const QString& username, const QString& email) {
+    m_settings.setValue("user/username", username);
+    m_settings.setValue("user/email", email);
+}
+
+QString AppSettings::getUsername() const {
+    return m_settings.value("user/username", "").toString();
+}
+
+QString AppSettings::getEmail() const {
+    return m_settings.value("user/email", "").toString();
+}

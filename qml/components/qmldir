@@ -2,5 +2,9 @@ module components
 AppButton 1.0 AppButton.qml
 AppTextInput 1.0 AppTextInput.qml
 AppNavBar 1.0 AppNavBar.qml
+AppMap 1.0 AppMap.qml
 DistanceSlider 1.0 DistanceSlider.qml
 PoiSelector 1.0 PoiSelector.qml
+RouteCard 1.0 RouteCard.qml
+MetricCard 1.0 MetricCard.qml
+MapSourceCard 1.0 MapSourceCard.qml

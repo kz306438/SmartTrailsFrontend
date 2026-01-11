@@ -1,9 +1,9 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 import components 1.0
 import theme 1.0
-import Qt5Compat.GraphicalEffects // Remove if not using DropShadow, otherwise see note below*
 
 Page {
     id: root
@@ -25,87 +25,158 @@ Page {
         return dist
     }
 
+    Dialog {
+        id: renameDialog
+        title: "Change User Name"
+        anchors.centerIn: Overlay.overlay
+        width: root.width * 0.8
+        modal: true
+        standardButtons: Dialog.Ok | Dialog.Cancel
+
+        background: Rectangle {
+            color: "white"
+            radius: Style.radius
+        }
+
+        ColumnLayout {
+            spacing: 10
+            width: parent.width
+
+            AppTextInput {
+                id: nameInput
+                placeholderText: "Enter new name"
+                Layout.fillWidth: true
+                text: AuthManager.username
+                focus: true
+            }
+        }
+
+        onOpened: nameInput.forceActiveFocus()
+
+        onAccepted: {
+            if (nameInput.text.trim() !== "") {
+                AuthManager.updateProfile(nameInput.text)
+            }
+        }
+        onRejected: {
+            nameInput.text = AuthManager.username
+        }
+    }
+
+    Dialog {
+            id: logoutDialog
+            title: "Log Out"
+            anchors.centerIn: Overlay.overlay
+            width: root.width * 0.8
+            modal: true
+            standardButtons: Dialog.Ok | Dialog.Cancel
+
+            background: Rectangle {
+                color: "white"
+                radius: Style.radius
+            }
+
+            contentItem: Text {
+                text: "Are you sure you want to log out?"
+                color: Style.textPrimary
+                font.pixelSize: Style.fontSizeBody
+                padding: 20
+                wrapMode: Text.Wrap
+                horizontalAlignment: Text.AlignHCenter
+            }
+
+            onAccepted: {
+                AuthManager.logout()
+                window.replaceScreen(Qt.resolvedUrl("LoginScreen.qml"))
+            }
+        }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 24
         anchors.bottomMargin: 90
-        spacing: 24
+        spacing: 20
 
-        // --- 1. Avatar Section ---
         Item {
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 20
-            width: 140
-            height: 140
+            Layout.topMargin: 40
+            Layout.bottomMargin: 10
+            width: 120
+            height: 120
 
-            // Green Circle Border
             Rectangle {
                 anchors.fill: parent
-                radius: 70
-                color: "transparent"
-                border.color: Style.primary
+                radius: width / 2
+                color: Style.primary
+                border.color: "white"
                 border.width: 4
 
-                // FIX: Use Button instead of Image+Shader to colorize the icon
-                Button {
+                Image {
+                    id: profileIcon
                     anchors.centerIn: parent
-                    width: 80
-                    height: 80
-                    display: AbstractButton.IconOnly
-                    background: null // Remove button background
+                    width: parent.width * 0.9
+                    height: parent.height * 0.9
 
-                    // Icon settings
-                    icon.source: "qrc:/qt/qml/SmartTrailsFrontend/assets/profile-user.svg"
-                    icon.width: 80
-                    icon.height: 80
-                    icon.color: Style.primary // Native Qt6 colorizing
+                    source: "qrc:/qt/qml/SmartTrailsFrontend/assets/profile-user.svg"
+                    sourceSize: Qt.size(width, height)
+                    smooth: true
+                    visible: false
+                }
 
-                    // Make it look active even if not clickable
-                    enabled: false
-                    opacity: 1.0
-                    contentItem.opacity: 1.0
+                ColorOverlay {
+                    anchors.fill: profileIcon
+                    source: profileIcon
+                    color: "white" // Красим иконку в белый
                 }
             }
         }
 
-        // --- 2. Input Fields ---
-
-        // USERNAME
         Rectangle {
             Layout.fillWidth: true
-            height: 60
-            radius: 8
+            height: 64
+            radius: 12
             color: "white"
             border.color: Style.primary
             border.width: 2
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: 12
-                anchors.rightMargin: 12
-                spacing: 12
+                anchors.leftMargin: 16
+                anchors.rightMargin: 16
+                spacing: 16
 
-                // Pencil Icon
-                Button {
-                    display: AbstractButton.IconOnly
-                    background: null
-                    enabled: false
+                // Карандаш
+                Item {
                     Layout.preferredWidth: 24
                     Layout.preferredHeight: 24
 
-                    icon.source: "qrc:/qt/qml/SmartTrailsFrontend/assets/pencil.svg"
-                    icon.width: 24
-                    icon.height: 24
-                    icon.color: Style.primaryDark // Dark Green
+                    Image {
+                        id: pencilImg
+                        anchors.fill: parent
+                        source: "qrc:/qt/qml/SmartTrailsFrontend/assets/pencil.svg"
+                        sourceSize: Qt.size(24, 24)
+                        visible: false
+                    }
 
-                    opacity: 1.0
-                    contentItem.opacity: 1.0
+                    ColorOverlay {
+                        anchors.fill: pencilImg
+                        source: pencilImg
+                        color: Style.primary
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onPressed: parent.opacity = 0.5
+                        onReleased: parent.opacity = 1.0
+                        onClicked: renameDialog.open()
+                    }
                 }
 
-                // Text Column
+                // Текст
                 Column {
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignVCenter
+                    spacing: 2
 
                     Text {
                         text: "User Name"
@@ -114,58 +185,55 @@ Page {
                         font.bold: true
                     }
 
-                    TextInput {
-                        id: nameInput
-                        text: AuthManager.username
-                        width: parent.width
+                    Text {
+                        text: AuthManager.username === "" ? "..." : AuthManager.username
                         font.pixelSize: 16
-                        color: "black"
-                        selectByMouse: true
-                        clip: true
-                        onEditingFinished: {
-                            focus = false
-                            AuthManager.updateProfile(text)
-                        }
+                        color: Style.textPrimary
+                        elide: Text.ElideRight
+                        width: parent.width
                     }
                 }
             }
         }
 
-        // EMAIL
         Rectangle {
             Layout.fillWidth: true
-            height: 60
-            radius: 8
-            color: "#F0F0F0"
-            border.color: "#BDBDBD"
+            height: 64
+            radius: 12
+            color: "#F5F5F5"
+            border.color: "#E0E0E0"
             border.width: 1
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: 12
-                anchors.rightMargin: 12
-                spacing: 12
+                anchors.leftMargin: 16
+                anchors.rightMargin: 16
+                spacing: 16
 
-                // Mail Icon
-                Button {
-                    display: AbstractButton.IconOnly
-                    background: null
-                    enabled: false
+                // Иконка почты
+                Item {
                     Layout.preferredWidth: 24
                     Layout.preferredHeight: 24
 
-                    icon.source: "qrc:/qt/qml/SmartTrailsFrontend/assets/mail.svg"
-                    icon.width: 24
-                    icon.height: 24
-                    icon.color: "#757575" // Grey
+                    Image {
+                        id: mailImg
+                        anchors.fill: parent
+                        source: "qrc:/qt/qml/SmartTrailsFrontend/assets/mail.svg"
+                        sourceSize: Qt.size(24, 24)
+                        visible: false
+                    }
 
-                    opacity: 1.0
-                    contentItem.opacity: 1.0
+                    ColorOverlay {
+                        anchors.fill: mailImg
+                        source: mailImg
+                        color: "#757575"
+                    }
                 }
 
                 Column {
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignVCenter
+                    spacing: 2
 
                     Text {
                         text: "Email"
@@ -175,46 +243,39 @@ Page {
 
                     Text {
                         text: AuthManager.email
-                        width: parent.width
                         font.pixelSize: 16
                         color: "#616161"
                         elide: Text.ElideRight
+                        width: parent.width
                     }
                 }
             }
         }
 
-        // --- 3. Statistics ---
         Text {
             text: "Statistics"
             font.bold: true
             font.pixelSize: 18
             color: "black"
-            Layout.topMargin: 10
+            Layout.topMargin: 20
         }
 
-        // Stats Rows
         ColumnLayout {
-            spacing: 12
+            spacing: 16
 
             // Distance
             RowLayout {
                 spacing: 15
-                Button {
-                    display: AbstractButton.IconOnly
-                    background: null
-                    enabled: false
-                    Layout.preferredWidth: 24
-                    Layout.preferredHeight: 24
-                    padding: 0
-
-                    icon.source: "qrc:/qt/qml/SmartTrailsFrontend/assets/run.svg"
-                    icon.width: 24
-                    icon.height: 24
-                    icon.color: Style.primary
-
-                    opacity: 1.0
-                    contentItem.opacity: 1.0
+                Item {
+                    Layout.preferredWidth: 28; Layout.preferredHeight: 28
+                    Image {
+                        id: runImg
+                        anchors.fill: parent
+                        source: "qrc:/qt/qml/SmartTrailsFrontend/assets/run.svg"
+                        sourceSize: Qt.size(28, 28)
+                        visible: false
+                    }
+                    ColorOverlay { anchors.fill: runImg; source: runImg; color: Style.primary }
                 }
                 Text {
                     text: "Total Distance: " + root.totalDistance.toFixed(1) + " km"
@@ -223,24 +284,19 @@ Page {
                 }
             }
 
-            // Saved Routes
+            // Saved Routes (bookmark.svg)
             RowLayout {
                 spacing: 15
-                Button {
-                    display: AbstractButton.IconOnly
-                    background: null
-                    enabled: false
-                    Layout.preferredWidth: 24
-                    Layout.preferredHeight: 24
-                    padding: 0
-
-                    icon.source: "qrc:/qt/qml/SmartTrailsFrontend/assets/star.svg"
-                    icon.width: 24
-                    icon.height: 24
-                    icon.color: Style.primary
-
-                    opacity: 1.0
-                    contentItem.opacity: 1.0
+                Item {
+                    Layout.preferredWidth: 28; Layout.preferredHeight: 28
+                    Image {
+                        id: bookmarkImg
+                        anchors.fill: parent
+                        source: "qrc:/qt/qml/SmartTrailsFrontend/assets/bookmark.svg"
+                        sourceSize: Qt.size(28, 28)
+                        visible: false
+                    }
+                    ColorOverlay { anchors.fill: bookmarkImg; source: bookmarkImg; color: Style.primary }
                 }
                 Text {
                     text: "Saved Routes: " + root.savedRoutesCount
@@ -252,32 +308,32 @@ Page {
 
         Item { Layout.fillHeight: true }
 
-        // --- 4. Log Out ---
-        Button {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 50
+                Button {
+                    id: logoutBtn
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 50
+                    Layout.bottomMargin: 10
 
-            background: Rectangle {
-                radius: 25
-                color: "white"
-                border.color: "#D32F2F"
-                border.width: 2
-            }
+                    background: Rectangle {
+                        radius: 12
+                        color: logoutBtn.down ? "#D32F2F" : "white"
+                        border.color: "#D32F2F"
+                        border.width: 2
+                    }
 
-            contentItem: Text {
-                text: "LOG OUT"
-                color: "#D32F2F"
-                font.bold: true
-                font.pixelSize: 16
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
+                    contentItem: Text {
+                        text: "LOG OUT"
+                        color: logoutBtn.down ? "white" : "#D32F2F"
+                        font.bold: true
+                        font.pixelSize: 16
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
 
-            onClicked: {
-                AuthManager.logout()
-                window.replaceScreen(Qt.resolvedUrl("LoginScreen.qml"))
-            }
-        }
+                    onClicked: {
+                        logoutDialog.open()
+                    }
+                }
     }
 
     AppNavBar {
@@ -285,8 +341,10 @@ Page {
         anchors.left: parent.left
         anchors.right: parent.right
         activeIndex: 2
+
         onTabSelected: (index) => {
             if (index === 0) window.replaceScreen(Qt.resolvedUrl("HomeScreen.qml"))
+            if (index === 1) window.replaceScreen(Qt.resolvedUrl("SavedRoutesScreen.qml"))
         }
     }
 }

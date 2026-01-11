@@ -4,3 +4,8 @@ HomeScreen 1.0 HomeScreen.qml
 RegisterScreen 1.0 RegisterScreen.qml
 ProfileScreen 1.0 ProfileScreen.qml
 MapScreen 1.0 MapScreen.qml
+SavedRoutesScreen 1.0 SavedRoutesScreen.qml
+SavedRouteDetailScreen 1.0 SavedRouteDetailScreen.qml
+AdminHomeScreen 1.0 AdminHomeScreen.qml
+AdminMetricsScreen 1.0 AdminMetricsScreen.qml
+AdminMapScreen 1.0 AdminMapScreen.qml
